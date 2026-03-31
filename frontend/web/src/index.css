@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Sora:wght@100..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 201 85% 19%;
+    --foreground: 204 33% 97%;
+
+    --card: 204 33% 97%;
+    --card-foreground: 201 85% 19%;
+
+    --popover: 204 33% 97%;
+    --popover-foreground: 201 85% 19%;
+
+    --primary: 201 83% 26%;
+    --primary-foreground: 204 33% 97%;
+
+    --secondary: 201 85% 19%;
+    --secondary-foreground: 204 33% 97%;
+
+    --muted: 209 10% 42%;
+    --muted-foreground: 209 10% 62%;
+
+    --accent: 43 100% 43%;
+    --accent-foreground: 201 85% 19%;
+
+    --destructive: 6 63% 46%;
+    --destructive-foreground: 204 33% 97%;
+
+    --border: 201 50% 28%;
+    --input: 201 50% 28%;
+    --ring: 208 54% 51%;
+
+    --radius: 0.75rem;
+
+    /* Dashboard specific tokens */
+    --nav-bg: 201 85% 16%;
+    --nav-active: 201 83% 26%;
+    --nav-hover: 201 70% 22%;
+    --header-bg: 201 85% 12%;
+    --content-bg: 201 75% 15%;
+
+    --card-green: 146 50% 36%;
+    --card-green-light: 146 30% 92%;
+    --card-yellow: 43 100% 43%;
+    --card-yellow-light: 43 70% 90%;
+    --card-orange: 6 63% 46%;
+    --card-orange-light: 6 50% 92%;
+    --card-blue: 201 83% 26%;
+
+    --status-pending: 43 100% 43%;
+    --status-danger: 6 63% 46%;
+    --status-success: 146 50% 36%;
+    --status-info: 208 54% 51%;
+
+    --sidebar-background: 201 85% 16%;
+    --sidebar-foreground: 209 10% 70%;
+    --sidebar-primary: 208 54% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 201 70% 22%;
+    --sidebar-accent-foreground: 204 33% 97%;
+    --sidebar-border: 201 50% 25%;
+    --sidebar-ring: 208 54% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .dashboard-card {
+    @apply rounded-xl shadow-sm border-0 transition-all duration-200;
+  }
+  .dashboard-card:hover {
+    @apply shadow-md;
+    transform: translateY(-1px);
+  }
+  .stat-card {
+    @apply rounded-xl p-5 text-white relative overflow-hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 100px;
+    height: 200%;
+    background: rgba(255,255,255,0.05);
+    transform: rotate(15deg);
+  }
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer;
+    color: hsl(var(--sidebar-foreground));
+  }
+  .nav-item:hover {
+    background: hsl(var(--nav-hover));
+  }
+  .nav-item.active {
+    background: hsl(var(--nav-active));
+    color: white;
+  }
+  .section-card {
+    @apply bg-card text-card-foreground rounded-xl p-5 shadow-sm;
+  }
+  .table-row-hover {
+    @apply transition-colors duration-100;
+  }
+  .table-row-hover:hover {
+    background: hsl(215 25% 96%);
+  }
+  .badge-pending {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+    background: hsl(var(--status-pending) / 0.15);
+    color: hsl(var(--status-pending));
+  }
+  .badge-success {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+    background: hsl(var(--status-success) / 0.15);
+    color: hsl(var(--status-success));
+  }
+  .badge-danger {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+    background: hsl(var(--status-danger) / 0.15);
+    color: hsl(var(--status-danger));
+  }
+}
