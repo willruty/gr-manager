@@ -47,14 +47,14 @@ export default function TabLayout() {
         },
       }}
     >
-      {/* ABA 1: HOME / DOCUMENTOS */}
+      {/* ABA 1: HOME */}
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          title: "OS e Documentos", 
+          title: "Guindastes Ribas",
           tabBarLabel: "Home",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="folder-open" color={color} />
+            <TabBarIcon name="home" color={color} />
           ),
         }}
       />

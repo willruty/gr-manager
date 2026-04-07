@@ -1,48 +1,79 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+type FeatureCardProps = {
+  icon: React.ComponentProps<typeof FontAwesome>['name'];
+  title: string;
+  description: string;
+  disabled?: boolean;
+};
+
+function FeatureCard({ icon, title, description, disabled }: FeatureCardProps) {
+  return (
+    <TouchableOpacity
+      activeOpacity={disabled ? 1 : 0.8}
+      className="flex-row items-center border-[3px] border-black rounded-xl shadow-[4px_4px_0px_0px_#000000] mb-4 bg-white overflow-hidden"
+    >
+      {/* Ícone lateral */}
+      <View className="bg-[#08233e] w-16 h-full items-center justify-center py-5">
+        <FontAwesome name={icon} size={26} color="#ffd100" />
+      </View>
+
+      {/* Conteúdo */}
+      <View className="flex-1 px-4 py-4">
+        <Text className="text-base font-black text-black uppercase tracking-tight mb-1">
+          {title}
+        </Text>
+        <Text className="text-xs font-bold text-[#666] leading-4">
+          {description}
+        </Text>
+      </View>
+
+      {/* Seta */}
+      <View className="pr-4">
+        <FontAwesome name="chevron-right" size={14} color="#000" />
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export default function HomeScreen() {
-  // Dados mockados para apresentação
-  const mockDocs = [
-    { id: 1, title: 'OS - Guindaste 70t', status: 'Pendente', date: '30/03/2026' },
-    { id: 2, title: 'Manutenção Preventiva', status: 'Concluído', date: '28/03/2026' },
-    { id: 3, title: 'Relatório de Frota', status: 'Em Análise', date: '25/03/2026' },
-  ];
-
   return (
-    <ScrollView className="flex-1 bg-white p-6">
-      <Text className="text-2xl font-black text-black uppercase mb-6 tracking-tight">
-        Últimos Registros
-      </Text>
+    <ScrollView className="flex-1 bg-[#f8f8f8]">
+      {/* Banner de boas-vindas */}
+      <View className="bg-[#08233e] px-6 pt-8 pb-10 border-b-[3px] border-black">
+        <Text className="text-xs font-black text-[#ffd100] uppercase tracking-widest mb-1">
+          Bem-vindo
+        </Text>
+        <Text className="text-3xl font-black text-white uppercase leading-9">
+          O que{'\n'}deseja fazer?
+        </Text>
+      </View>
 
-      {mockDocs.map((doc) => (
-        <View
-          key={doc.id}
-          className="flex-col border-[3px] border-black rounded-xl shadow-[4px_4px_0px_0px_#000000] overflow-hidden mb-5 bg-[#f8f8f8]"
-        >
-          {/* Cabeçalho do Card */}
-          <View className="bg-[#08233e] border-b-[3px] border-black px-4 py-2 flex-row justify-between items-center">
-            <Text className="text-xs font-black tracking-widest text-white uppercase">
-              {doc.date}
-            </Text>
-          </View>
+      {/* Cards de funcionalidades */}
+      <View className="px-5 pt-6 pb-4">
 
-          {/* Corpo do Card */}
-          <View className="p-5 bg-white">
-            <Text className="text-xl font-black text-black mb-4">
-              {doc.title}
-            </Text>
-            
-            <View className="self-start">
-              <Text className="text-xs font-black text-black bg-[#ffd100] border-[2px] border-black px-3 py-1 rounded-md uppercase tracking-wide">
-                {doc.status}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
-      
-      {/* Espaço extra no final do scroll para não grudar na navbar */}
-      <View className="h-10" />
+        <FeatureCard
+          icon="qrcode"
+          title="Escanear Equipamento"
+          description="Leia o QR Code de um equipamento para acessar informações e registros."
+        />
+
+        <FeatureCard
+          icon="id-card"
+          title="Documentos Pessoais"
+          description="Busque e baixe seus documentos pessoais."
+        />
+
+        <FeatureCard
+          icon="file-text"
+          title="Documentos de Equipamento"
+          description="Busque e baixe manuais, laudos e relatórios de equipamentos."
+        />
+
+      </View>
+
+      <View className="h-6" />
     </ScrollView>
   );
 }
