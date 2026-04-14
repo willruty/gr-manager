@@ -1,76 +1,88 @@
 import { motion } from "framer-motion";
-import { ChevronRight, ChevronDown, AlertTriangle, Heart, Calendar } from "lucide-react";
-
-import { StatCard } from "@/types/dashboard";
-
-const cards: StatCard[] = [
-  {
-    title: "Contratos Ativos",
-    value: "0",
-    subtitle: "R$ 0,00",
-    footer: "-",
-    bg: "bg-dashboard-green",
-    icon: ChevronDown,
-    delay: 0,
-  },
-  {
-    title: "Vencendo Em Breve",
-    value: "0",
-    subtitle: "Prazo -",
-    footer: "-",
-    bg: "bg-dashboard-yellow",
-    icon: ChevronDown,
-    delay: 0.05,
-  },
-  {
-    title: "Documentos Pendentes",
-    value: "0",
-    subtitle: "-",
-    footer: "-",
-    bg: "bg-dashboard-orange",
-    icon: ChevronDown,
-    footerIcon: AlertTriangle,
-    delay: 0.1,
-  },
-  {
-    title: "Reuniões da Semana",
-    value: "0",
-    subtitle: "",
-    footer: "VER AGENDA",
-    bg: "bg-card",
-    textDark: true,
-    icon: null,
-    delay: 0.15,
-  },
-];
+import { FileText, AlertTriangle, FolderClock, Users } from "lucide-react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { Contract } from "@/types/dashboard";
+import { ClientData } from "./ClientsTable";
 
 const StatCards = () => {
+  const [contracts] = useLocalStorage<Contract[]>("gr:contracts", []);
+  const [clients] = useLocalStorage<ClientData[]>("gr:clients", []);
+
+  const ativos = contracts.filter(c => c.status === "Ativo").length;
+  const pendentes = contracts.filter(c => c.status === "Pendente").length;
+  const clientesAtivos = clients.filter(c => c.status === "Ativo").length;
+
+  const cards = [
+    {
+      title: "Contratos Ativos",
+      value: ativos,
+      subtitle: `de ${contracts.length} total`,
+      note: "Dados locais",
+      bg: "from-emerald-500 to-emerald-600",
+      icon: FileText,
+      delay: 0,
+    },
+    {
+      title: "Vencendo em Breve",
+      value: pendentes,
+      subtitle: "nos próximos 30 dias",
+      note: pendentes > 0 ? "requer atenção" : "Tudo em dia",
+      bg: "from-amber-400 to-amber-500",
+      icon: AlertTriangle,
+      delay: 0.06,
+    },
+    {
+      title: "Documentos Pendentes",
+      value: 0,
+      subtitle: "aguardando revisão",
+      note: "Aguarda backend",
+      bg: "from-orange-500 to-orange-600",
+      icon: FolderClock,
+      delay: 0.12,
+    },
+    {
+      title: "Clientes Ativos",
+      value: clientesAtivos,
+      subtitle: `de ${clients.length} cadastrados`,
+      note: "Dados locais",
+      bg: null,
+      icon: Users,
+      delay: 0.18,
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-4 gap-4">
-      {cards.map((card, i) => (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map((card) => (
         <motion.div
           key={card.title}
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: card.delay }}
-          className={`stat-card ${card.bg} ${card.textDark ? "!text-card-foreground" : ""}`}
+          whileHover={{ y: -3, transition: { duration: 0.18 } }}
+          transition={{ duration: 0.3, delay: card.delay }}
+          className={`relative rounded-2xl p-5 overflow-hidden cursor-pointer shadow-sm hover:shadow-lg transition-shadow ${
+            card.bg
+              ? `bg-gradient-to-br ${card.bg} text-white`
+              : "bg-card text-card-foreground border border-border"
+          }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider opacity-90">
-              {card.title}
-            </span>
-            {card.icon && <card.icon size={14} className="opacity-70" />}
-          </div>
-          <p className="text-4xl font-bold mb-1">{card.value}</p>
-          {card.subtitle && (
-            <p className="text-sm opacity-80">{card.subtitle}</p>
-          )}
-          <div className="mt-3 pt-2 border-t border-white/20 flex items-center gap-2 text-xs opacity-80">
-            {card.footerIcon && <card.footerIcon size={12} />}
-            {card.footer === "Empresa Familiar" && <Heart size={12} />}
-            {card.footer === "Detias 1988" && <Calendar size={12} />}
-            <span>{card.footer}</span>
-            <ChevronRight size={12} className="ml-auto" />
+          {/* Decorative circle */}
+          <div className={`absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-10 ${card.bg ? "bg-white" : "bg-primary"}`} />
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <span className={`text-[10px] font-black uppercase tracking-widest leading-tight ${card.bg ? "opacity-80" : "text-muted-foreground"}`}>
+                {card.title}
+              </span>
+              <card.icon size={15} className={card.bg ? "opacity-70" : "text-primary opacity-70"} />
+            </div>
+
+            <p className="text-4xl font-black mb-0.5 leading-none">{card.value}</p>
+            <p className={`text-xs ${card.bg ? "opacity-70" : "text-muted-foreground"}`}>{card.subtitle}</p>
+
+            <p className={`text-[10px] font-medium mt-3 ${card.bg ? "opacity-60" : "text-muted-foreground/60"}`}>
+              {card.note}
+            </p>
           </div>
         </motion.div>
       ))}
