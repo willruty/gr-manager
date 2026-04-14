@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Search, Bell, Moon, Sun, Monitor } from "lucide-react";
+import { motion } from "framer-motion";
 import CommandPalette from "./CommandPalette";
 import { useTheme } from "@/components/theme-provider";
 
 const Header = () => {
   const [cmdOpen, setCmdOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const location = useLocation();
 
   // Global keyboard shortcut: Cmd+K / Ctrl+K
   useEffect(() => {
@@ -27,11 +30,50 @@ const Header = () => {
     else setTheme("dark");
   };
 
+  const getPageLabel = () => {
+    const routes: Record<string, string> = {
+      "/": "Dashboard",
+      "/contracts": "Contratos",
+      "/clients": "Clientes",
+      "/documents": "Documentos",
+      "/meetings": "Reuniões",
+      "/tasks": "Tarefas",
+      "/team": "Equipe",
+      "/reports": "Relatórios",
+      "/settings": "Configurações",
+    };
+    return routes[location.pathname] || "Página";
+  };
+
   return (
     <>
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
-      <header className="h-16 bg-background/80 flex items-center justify-between px-8 sticky top-0 z-20 backdrop-blur-md border-b border-border/50 transition-colors duration-300">
+      <header className="h-16 bg-background/80 flex items-center justify-between px-8 gap-6 sticky top-0 z-20 backdrop-blur-md border-b border-border/50 transition-colors duration-300">
+        {/* Page Indicator with Animation */}
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -12 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center gap-2 min-w-0"
+        >
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/10">
+            <motion.div
+              className="w-2 h-2 rounded-full bg-primary"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <span className="text-sm font-semibold text-foreground tracking-wide">
+              {getPageLabel()}
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
         {/* Search trigger (Cmd+K) */}
         <button
           onClick={() => setCmdOpen(true)}

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ClientsTable, { ClientData } from "@/components/dashboard/ClientsTable";
 import { Plus, Search, Users, Filter, UserCheck, UserX } from "lucide-react";
 import {
@@ -62,7 +61,7 @@ const Clients = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Gestão de Clientes</h1>
@@ -155,7 +154,7 @@ const Clients = () => {
       <div className="space-y-6">
         <ClientsTable data={filteredClients} />
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

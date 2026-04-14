@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import {
   Plus, CheckSquare, Search, Filter, Clock, AlertTriangle, CheckCircle2, Trash2
 } from "lucide-react";
@@ -94,7 +93,7 @@ const Tasks = () => {
   const altas = tasks.filter(t => t.priority === "Alta" && t.status === "Pendente").length;
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Gerenciador de Tarefas</h1>
@@ -268,7 +267,7 @@ const Tasks = () => {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

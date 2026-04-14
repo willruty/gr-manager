@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { 
   User, Bell, Shield, Palette, Globe, Mail, Lock, LogOut, Save, Moon, Sun, Smartphone 
 } from "lucide-react";
@@ -26,7 +25,7 @@ const Settings = () => {
 
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Configurações</h1>
@@ -189,7 +188,7 @@ const Settings = () => {
           </div>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

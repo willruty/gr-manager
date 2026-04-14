@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Plus, Search, FolderPlus, FileText, Download, MoreVertical, LayoutGrid, List } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
@@ -7,7 +6,7 @@ const Documents = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Repositório de Documentos</h1>
@@ -72,7 +71,7 @@ const Documents = () => {
         </div>
       </div>
 
-    </DashboardLayout>
+    </>
   );
 };
 

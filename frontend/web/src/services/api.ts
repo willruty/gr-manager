@@ -1,77 +1,69 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-/**
- * Basic API service using fetch. 
- * You can replace this with an axios instance if you prefer.
- */
+type Headers = Record<string, string>;
+
+interface ApiResponse<T> {
+  data: T | null;
+  error: string | null;
+}
+
+async function request<T>(
+  method: string,
+  endpoint: string,
+  headers?: Headers,
+  body?: unknown
+): Promise<ApiResponse<T>> {
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      return {
+        data: null,
+        error: `${response.status} ${response.statusText}${errorBody ? `: ${errorBody}` : ""}`,
+      };
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
+      const data = await response.json();
+      return { data, error: null };
+    }
+
+    return { data: null, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Erro desconhecido",
+    };
+  }
+}
+
 export const api = {
-  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+  get<T>(endpoint: string, headers?: Headers) {
+    return request<T>("GET", endpoint, headers);
   },
 
-  async post<T>(endpoint: string, data: any, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      body: JSON.stringify(data),
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+  post<T>(endpoint: string, data: unknown, headers?: Headers) {
+    return request<T>("POST", endpoint, headers, data);
   },
 
-  async put<T>(endpoint: string, data: any, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      body: JSON.stringify(data),
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+  put<T>(endpoint: string, data: unknown, headers?: Headers) {
+    return request<T>("PUT", endpoint, headers, data);
   },
 
-  async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      ...options,
-    });
+  patch<T>(endpoint: string, data: unknown, headers?: Headers) {
+    return request<T>("PATCH", endpoint, headers, data);
+  },
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+  delete<T>(endpoint: string, headers?: Headers) {
+    return request<T>("DELETE", endpoint, headers);
   },
 };

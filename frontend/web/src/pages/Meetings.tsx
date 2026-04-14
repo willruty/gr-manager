@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { 
   Plus, Calendar as CalendarIcon, Clock, Users, Video, MapPin, Search, Filter 
 } from "lucide-react";
@@ -71,7 +70,7 @@ const Meetings = () => {
   );
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Agenda de Reuniões</h1>
@@ -214,7 +213,7 @@ const Meetings = () => {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

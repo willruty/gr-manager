@@ -29,10 +29,10 @@ const Sidebar = () => {
     <motion.aside
       animate={{ width: collapsed ? 72 : 256 }}
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="h-[calc(100vh-2rem)] fixed left-4 top-4 z-40 flex flex-col rounded-[2rem] border border-border overflow-hidden shadow-xl bg-card"
+      className="h-screen fixed left-0 top-0 z-40 flex flex-col border-r border-border overflow-hidden bg-card"
     >
       {/* Brand Logo Section */}
-      <div className={`px-3 py-4 flex items-center shrink-0 border-b border-border/50 min-h-[68px] ${collapsed ? "justify-center" : "justify-between gap-2"}`}>
+      <div className={`px-4 py-5 flex items-center shrink-0 border-b border-border/50 min-h-16 ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
         <AnimatePresence mode="wait">
           {!collapsed ? (
             <motion.div
@@ -68,7 +68,7 @@ const Sidebar = () => {
       </div>
 
       {/* Nav Section */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto scrollbar-hide">
+      <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto scrollbar-hide">
         {navItems.map((item) => (
           collapsed ? (
             <Tooltip key={item.label} delayDuration={100}>
@@ -123,7 +123,7 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom Profile Section */}
-      <div className={`p-3 pb-5 bg-muted/20 border-t border-border/50 mt-auto shrink-0 ${collapsed ? "flex flex-col items-center gap-2" : ""}`}>
+      <div className={`p-4 pb-6 bg-muted/20 border-t border-border/50 mt-auto shrink-0 ${collapsed ? "flex flex-col items-center gap-3" : ""}`}>
         {!collapsed ? (
           <>
             <div className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors cursor-pointer group/user">

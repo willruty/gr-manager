@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import {
   BarChart3, TrendingUp, Users, FileText, Calendar, Download,
   PieChart as PieChartIcon, Printer, Database
@@ -20,7 +19,7 @@ const EmptyChart = ({ icon: Icon, label }: { icon: typeof FileText; label: strin
 
 const Reports = () => {
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Relatórios e Métricas</h1>
@@ -120,7 +119,7 @@ const Reports = () => {
         </h3>
         <EmptyChart icon={TrendingUp} label="Receita mensal" />
       </motion.div>
-    </DashboardLayout>
+    </>
   );
 };
 

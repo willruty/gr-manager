@@ -58,6 +58,30 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* ABA 2: SEARCH */}
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: "Buscar Documentos",
+          tabBarLabel: "Buscar",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="search" color={color} />
+          ),
+        }}
+      />
+
+      {/* ABA 3: PROFILE */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Meu Perfil",
+          tabBarLabel: "Perfil",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="user" color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

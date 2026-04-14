@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { 
   Plus, Users, Search, Filter, Phone, Mail, UserCog, ShieldCheck, MoreVertical, ChevronRight 
 } from "lucide-react";
@@ -78,7 +77,7 @@ const Team = () => {
   );
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Gestão da Equipe</h1>
@@ -216,7 +215,7 @@ const Team = () => {
           </table>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

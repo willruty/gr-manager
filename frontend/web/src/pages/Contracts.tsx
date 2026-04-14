@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ContractsTable from "@/components/dashboard/ContractsTable";
 import { Plus, Filter, Search, FileText, TrendingUp } from "lucide-react";
 import {
@@ -63,7 +62,7 @@ const Contracts = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-foreground">Gestão de Contratos</h1>
@@ -182,7 +181,7 @@ const Contracts = () => {
       <div className="space-y-6">
         <ContractsTable data={filteredContracts} />
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import StatCards from "@/components/dashboard/StatCards";
 import ContractsTable from "@/components/dashboard/ContractsTable";
 import PendingDocs from "@/components/dashboard/PendingDocs";
@@ -59,7 +58,7 @@ const Index = () => {
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
-    <DashboardLayout>
+    <>
       {/* Page Header */}
       <div className="flex items-start justify-between mb-7">
         <div>
@@ -203,7 +202,7 @@ const Index = () => {
         <RecentFiles />
         <UrgentDocs />
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

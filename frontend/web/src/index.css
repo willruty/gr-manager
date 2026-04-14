@@ -96,13 +96,11 @@
 @layer base {
   * {
     @apply border-border;
-    transition-property: background-color, border-color, color;
-    transition-duration: 200ms;
-    transition-timing-function: ease;
   }
 
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
+    overflow-y: scroll;
   }
 
   body {
