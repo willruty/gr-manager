@@ -1,38 +1,58 @@
 import {
   LayoutDashboard, FileText, FolderOpen, Users, Calendar,
-  CheckSquare, UserCog, BarChart3, Settings, LogOut, ChevronRight,
+  CheckSquare, UserCog, BarChart3, Settings, LogOut,
   PanelLeftClose, PanelLeftOpen
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Logo from "@/components/Logo";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: FileText, label: "Contratos", path: "/contracts" },
-  { icon: FolderOpen, label: "Documentos", path: "/documents" },
-  { icon: Users, label: "Clientes", path: "/clients" },
-  { icon: Calendar, label: "Reuniões", path: "/meetings" },
-  { icon: CheckSquare, label: "Tarefas", path: "/tasks" },
-  { icon: UserCog, label: "Equipe", path: "/team" },
-  { icon: BarChart3, label: "Relatórios", path: "/reports" },
-  { icon: Settings, label: "Configurações", path: "/settings" },
+type NavItem = { icon: typeof LayoutDashboard; label: string; path: string; badge?: string };
+type NavSection = { label: string; items: NavItem[] };
+
+const navSections: NavSection[] = [
+  {
+    label: "Operação",
+    items: [
+      { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+      { icon: FileText, label: "Contratos", path: "/contracts", badge: "41" },
+      { icon: FolderOpen, label: "Documentos", path: "/documents", badge: "3" },
+      { icon: Users, label: "Clientes", path: "/clients" },
+    ],
+  },
+  {
+    label: "Agenda & Produtividade",
+    items: [
+      { icon: Calendar, label: "Reuniões", path: "/meetings" },
+      { icon: CheckSquare, label: "Tarefas", path: "/tasks", badge: "5" },
+    ],
+  },
+  {
+    label: "Gestão",
+    items: [
+      { icon: UserCog, label: "Equipe", path: "/team" },
+      { icon: BarChart3, label: "Relatórios", path: "/reports" },
+      { icon: Settings, label: "Configurações", path: "/settings" },
+    ],
+  },
 ];
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useLocalStorage<boolean>("gr:sidebar-collapsed", false);
+  const { logout } = useAuth();
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 72 : 256 }}
-      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="h-screen fixed left-0 top-0 z-40 flex flex-col border-r border-border overflow-hidden bg-card"
+      animate={{ width: collapsed ? 76 : 264 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className="h-screen fixed left-0 top-0 z-40 flex flex-col overflow-hidden bg-gradient-to-b from-[hsl(222,47%,9%)] via-[hsl(222,47%,7%)] to-[hsl(222,47%,5%)] border-r border-white/5"
     >
-      {/* Brand Logo Section */}
-      <div className={`px-4 py-5 flex items-center shrink-0 border-b border-border/50 min-h-16 ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
+      {/* ── Brand ────────────────────────────────────────────── */}
+      <div className={`h-[72px] shrink-0 flex items-center border-b border-white/5 ${collapsed ? "justify-center px-2" : "justify-between gap-3 px-5"}`}>
         <AnimatePresence mode="wait">
           {!collapsed ? (
             <motion.div
@@ -41,9 +61,9 @@ const Sidebar = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }}
               transition={{ duration: 0.18 }}
-              className="flex-1 min-w-0"
+              className="flex items-center gap-2.5 min-w-0"
             >
-              <Logo collapsed={false} className="w-32 h-auto" />
+              <Logo collapsed={false} className="w-[104px] h-auto" />
             </motion.div>
           ) : (
             <motion.div
@@ -60,121 +80,156 @@ const Sidebar = () => {
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all shrink-0"
+          className="p-2 rounded-lg text-white/50 hover:bg-white/5 hover:text-white transition-all shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
           title={collapsed ? "Expandir menu" : "Recolher menu"}
         >
-          {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
+          {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
         </button>
       </div>
 
-      {/* Nav Section */}
-      <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto scrollbar-hide">
-        {navItems.map((item) => (
-          collapsed ? (
-            <Tooltip key={item.label} delayDuration={100}>
-              <TooltipTrigger asChild>
+      {/* ── Navegação agrupada (Chunking/Miller) ─────────────── */}
+      <nav className={`flex-1 overflow-y-auto scrollbar-hide ${collapsed ? "px-2 py-5 space-y-3" : "px-3 py-5 space-y-6"}`}>
+        {navSections.map((section) => (
+          <div key={section.label} className="space-y-1.5">
+            {!collapsed && (
+              <p className="px-3 mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
+                {section.label}
+              </p>
+            )}
+            {collapsed && <div className="mx-3 my-2 h-px bg-white/5" />}
+
+            {section.items.map((item) => (
+              collapsed ? (
+                <Tooltip key={item.label} delayDuration={80}>
+                  <TooltipTrigger asChild>
+                    <NavLink
+                      to={item.path}
+                      end={item.path === "/"}
+                      className={({ isActive }) =>
+                        `relative flex items-center justify-center h-12 w-12 mx-auto rounded-xl transition-all duration-200 ${
+                          isActive
+                            ? "bg-white/10 text-white shadow-inner shadow-white/5"
+                            : "text-white/50 hover:bg-white/5 hover:text-white"
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          {isActive && (
+                            <motion.span
+                              layoutId="sidebar-active-dot"
+                              className="absolute left-0 w-1 h-7 bg-gradient-to-b from-blue-400 to-blue-500 rounded-r-full"
+                            />
+                          )}
+                          <item.icon size={19} />
+                          {item.badge && (
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[9px] font-black flex items-center justify-center border border-[hsl(222,47%,7%)]">
+                              {item.badge}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="font-semibold text-xs">
+                    {item.label}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
                 <NavLink
+                  key={item.label}
                   to={item.path}
                   end={item.path === "/"}
                   className={({ isActive }) =>
-                    `flex items-center justify-center p-3 rounded-xl transition-all duration-200 ${
+                    `group/nav relative flex items-center gap-3 h-12 px-3 rounded-xl text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40 ${
                       isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-white/10 text-white shadow-inner shadow-white/5"
+                        : "text-white/55 hover:bg-white/5 hover:text-white"
                     }`
                   }
                 >
-                  <item.icon size={18} />
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.span
+                          layoutId="sidebar-active-bar"
+                          className="absolute left-0 w-1 h-8 bg-gradient-to-b from-blue-400 to-blue-500 rounded-r-full"
+                        />
+                      )}
+                      <item.icon size={18} className={`shrink-0 transition-transform group-hover/nav:scale-110 ${isActive ? "text-blue-300" : ""}`} />
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {item.badge && (
+                        <span className={`px-1.5 h-[18px] rounded-full text-[10px] font-black flex items-center justify-center transition-colors ${
+                          isActive
+                            ? "bg-blue-500 text-white"
+                            : "bg-white/10 text-white/70 group-hover/nav:bg-white/20"
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </>
+                  )}
                 </NavLink>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="font-medium text-xs">
-                {item.label}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <NavLink
-              key={item.label}
-              to={item.path}
-              end={item.path === "/"}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-200 group/item ${
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <item.icon size={15} className="shrink-0 transition-transform group-hover/item:scale-105" />
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex-1 truncate"
-                  >
-                    {item.label}
-                  </motion.span>
-                  {isActive && <ChevronRight size={12} className="ml-auto shrink-0 opacity-60" />}
-                </>
-              )}
-            </NavLink>
-          )
+              )
+            ))}
+          </div>
         ))}
       </nav>
 
-      {/* Bottom Profile Section */}
-      <div className={`p-4 pb-6 bg-muted/20 border-t border-border/50 mt-auto shrink-0 ${collapsed ? "flex flex-col items-center gap-3" : ""}`}>
+      {/* ── Perfil + Logout (Fitts: alvos grandes) ───────────── */}
+      <div className={`shrink-0 border-t border-white/5 ${collapsed ? "p-2 flex flex-col items-center gap-2" : "p-3"}`}>
         {!collapsed ? (
-          <>
-            <div className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors cursor-pointer group/user">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 border border-border flex items-center justify-center text-primary font-black text-xs shrink-0">
-                HR
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] font-black text-foreground uppercase tracking-tighter truncate">Helena Ribas</span>
-                <span className="text-[9px] text-muted-foreground font-medium">Administradora</span>
-              </div>
-              <ChevronRight size={12} className="ml-auto text-muted-foreground group-hover/user:translate-x-0.5 transition-all shrink-0" />
-            </div>
-
+          <div className="space-y-1">
             <button
-              onClick={() => toast.info("Logout realizado com sucesso.")}
-              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive-foreground transition-all border border-border rounded-xl bg-background hover:bg-destructive hover:border-destructive/20"
+              onClick={() => toast.info("Perfil em breve.")}
+              className="w-full group/prof flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
             >
-              <LogOut size={12} />
-              <span>Sair do Sistema</span>
-            </button>
-          </>
-        ) : (
-          <>
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <div className="w-9 h-9 rounded-lg bg-primary/10 border border-border flex items-center justify-center text-primary font-black text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all">
+              <div className="relative shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-black text-[13px] shadow-md shadow-blue-500/30">
                   HR
                 </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[hsl(222,47%,7%)]" />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[13px] font-bold text-white truncate leading-tight">Helena Ribas</p>
+                <p className="text-[10px] text-white/40 font-medium uppercase tracking-wider">Administradora</p>
+              </div>
+            </button>
+
+            <button
+              onClick={logout}
+              className="w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-widest text-white/50 hover:text-red-300 hover:bg-red-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
+            >
+              <LogOut size={13} />
+              <span>Sair</span>
+            </button>
+          </div>
+        ) : (
+          <>
+            <Tooltip delayDuration={80}>
+              <TooltipTrigger asChild>
+                <button className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-500/30 hover:scale-105 transition-transform">
+                  HR
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[hsl(222,47%,7%)]" />
+                </button>
               </TooltipTrigger>
               <TooltipContent side="right">Helena Ribas · Admin</TooltipContent>
             </Tooltip>
 
-            <Tooltip delayDuration={100}>
+            <Tooltip delayDuration={80}>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => toast.info("Logout realizado com sucesso.")}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl border border-border text-muted-foreground hover:bg-destructive hover:text-destructive-foreground hover:border-destructive/20 transition-all"
+                  onClick={logout}
+                  className="w-11 h-11 flex items-center justify-center rounded-xl text-white/50 hover:bg-red-500/10 hover:text-red-300 transition-all"
                 >
-                  <LogOut size={14} />
+                  <LogOut size={15} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right">Sair do Sistema</TooltipContent>
+              <TooltipContent side="right">Sair do sistema</TooltipContent>
             </Tooltip>
           </>
         )}
       </div>
-
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </motion.aside>
   );
 };

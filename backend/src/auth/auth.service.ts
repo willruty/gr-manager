@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -9,11 +10,16 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 @Injectable()
 export class AuthService {
   private supabase: SupabaseClient;
+  private supabaseAdmin: SupabaseClient;
 
   constructor(private config: ConfigService) {
     this.supabase = createClient(
       this.config.getOrThrow<string>('SUPABASE_URL'),
       this.config.getOrThrow<string>('SUPABASE_ANON_KEY'),
+    );
+    this.supabaseAdmin = createClient(
+      this.config.getOrThrow<string>('SUPABASE_URL'),
+      this.config.getOrThrow<string>('SUPABASE_SERVICE_ROLE_KEY'),
     );
   }
 
@@ -42,5 +48,29 @@ export class AuthService {
         expires_at: data.session.expires_at,
       },
     };
+  }
+
+  async logout(token: string) {
+    await this.supabaseAdmin.auth.admin.signOut(token, 'global');
+  }
+
+  async createAuthUser(email: string, password: string, nome: string) {
+    const { data, error } = await this.supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { nome },
+    });
+
+    if (error) {
+      if (error.message.toLowerCase().includes('already registered')) {
+        throw new ConflictException('Este email já está cadastrado no sistema');
+      }
+      throw new InternalServerErrorException(
+        `Erro ao criar usuário: ${error.message}`,
+      );
+    }
+
+    return data.user;
   }
 }

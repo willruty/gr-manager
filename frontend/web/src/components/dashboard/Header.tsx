@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Search, Bell, Moon, Sun, Monitor } from "lucide-react";
+import { Search, Moon, Sun } from "lucide-react";
 import { motion } from "framer-motion";
 import CommandPalette from "./CommandPalette";
 import { useTheme } from "@/components/theme-provider";
@@ -22,12 +22,10 @@ const Header = () => {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
+  const ThemeIcon = theme === "dark" ? Moon : Sun;
 
   const cycleTheme = () => {
-    if (theme === "dark") setTheme("light");
-    else if (theme === "light") setTheme("system");
-    else setTheme("dark");
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const getPageLabel = () => {
@@ -89,14 +87,6 @@ const Header = () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-3">
-          {/* Notification bell */}
-          <button className="relative p-2 bg-card border border-border rounded-xl text-muted-foreground hover:text-primary hover:shadow-md transition-all">
-            <Bell size={18} />
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
-              3
-            </span>
-          </button>
-
           {/* Theme toggle */}
           <button
             onClick={cycleTheme}

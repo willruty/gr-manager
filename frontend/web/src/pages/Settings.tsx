@@ -1,195 +1,413 @@
-import { 
-  User, Bell, Shield, Palette, Globe, Mail, Lock, LogOut, Save, Moon, Sun, Smartphone 
+import { useState } from "react";
+import {
+  User, Bell, Shield, Palette, Mail, Lock, LogOut, Save, Moon, Sun,
+  Camera, ChevronRight, Smartphone as DeviceIcon, Key, Globe, Check, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
 import { useTheme } from "@/components/theme-provider.tsx";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { useState } from "react";
+type Section = "profile" | "notifications" | "appearance" | "security";
+
+const NAV: { key: Section; label: string; icon: typeof User; desc: string }[] = [
+  { key: "profile",       label: "Perfil",        icon: User,    desc: "Informações pessoais e contato" },
+  { key: "notifications", label: "Notificações",  icon: Bell,    desc: "Preferências de alertas e e-mails" },
+  { key: "appearance",    label: "Aparência",     icon: Palette, desc: "Tema e personalização visual" },
+  { key: "security",      label: "Segurança",     icon: Shield,  desc: "Senha, sessões e dispositivos" },
+];
 
 const Settings = () => {
   const { theme, setTheme } = useTheme();
+  const [active, setActive] = useState<Section>("profile");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [form, setForm] = useState({
+    firstName: "Helena",
+    lastName: "Ribas",
+    email: "helena@guindastesribas.com.br",
+    phone: "(41) 99123-4500",
+    bio: "Administradora operacional, responsável pela gestão de frota e compliance documental.",
+  });
+
+  const [notifs, setNotifs] = useState({
+    email: true, vencimentos: true, mensagens: true, reports: false, marketing: false,
+  });
 
   const handleSave = () => {
-     toast.success("Configurações salvas com sucesso!");
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success("Configurações salvas com sucesso!");
+    }, 600);
   };
-
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold font-display text-foreground">Configurações</h1>
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary/70 mb-1">
+            Preferências · Conta
+          </p>
+          <h1 className="text-2xl font-extrabold font-display text-foreground tracking-tight">
+            Configurações
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Personalize o comportamento do sistema para o seu fluxo de trabalho
+          </p>
         </div>
 
-        <Button onClick={handleSave} className="gap-2">
-          <Save size={16} /> Salvar Alterações
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="gap-2 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow"
+        >
+          <Save size={15} /> {isSaving ? "Salvando…" : "Salvar alterações"}
         </Button>
       </div>
 
-      <div className="flex flex-col gap-6">
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="bg-muted/30 border border-border p-1 gap-2 mb-6">
-            <TabsTrigger value="profile" className="gap-2"><User size={14} /> Perfil</TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2"><Bell size={14} /> Notificações</TabsTrigger>
-            <TabsTrigger value="appearance" className="gap-2"><Palette size={14} /> Aparência</TabsTrigger>
-            <TabsTrigger value="security" className="gap-2"><Shield size={14} /> Segurança</TabsTrigger>
-          </TabsList>
+      {/* ── Layout: nav lateral (1/4) + conteúdo (3/4) ──────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        <aside className="section-card p-2 h-fit">
+          {NAV.map((item) => {
+            const isActive = active === item.key;
+            return (
+              <button
+                key={item.key}
+                onClick={() => setActive(item.key)}
+                className={`relative w-full text-left flex items-start gap-3 p-3 rounded-xl transition-all ${
+                  isActive
+                    ? "bg-primary/5 text-primary"
+                    : "hover:bg-muted/40 text-card-foreground"
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="settings-active"
+                    className="absolute left-0 top-2.5 bottom-2.5 w-0.5 rounded-r bg-primary"
+                  />
+                )}
+                <div className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center ${
+                  isActive ? "bg-primary/10" : "bg-muted/50"
+                }`}>
+                  <item.icon size={16} className={isActive ? "text-primary" : "text-muted-foreground"} />
+                </div>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <p className={`text-sm font-bold truncate ${isActive ? "text-primary" : ""}`}>
+                    {item.label}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                    {item.desc}
+                  </p>
+                </div>
+                <ChevronRight size={14} className={`shrink-0 mt-2 transition-transform ${
+                  isActive ? "text-primary translate-x-0.5" : "text-muted-foreground/40"
+                }`} />
+              </button>
+            );
+          })}
+        </aside>
 
-          <div className="mt-4">
-            <TabsContent value="profile">
-               <div className="section-card p-6 max-w-2xl">
-                  <h3 className="text-lg font-bold text-card-foreground mb-6">Informações Pessoais</h3>
-                  <div className="grid gap-6">
-                     <div className="flex items-center gap-6 mb-4">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 flex items-center justify-center text-primary cursor-pointer hover:bg-primary/20 transition-colors">
-                           <User size={32} />
-                        </div>
-                        <Button variant="outline" size="sm">Alterar Avatar</Button>
-                     </div>
-                     
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                           <Label htmlFor="firstName">Nome</Label>
-                           <Input id="firstName" placeholder="Seu nome" defaultValue="Caio" />
-                        </div>
-                        <div className="space-y-2">
-                           <Label htmlFor="lastName">Sobrenome</Label>
-                           <Input id="lastName" placeholder="Seu sobrenome" defaultValue="Marani" />
-                        </div>
-                     </div>
+        <AnimatePresence mode="wait">
+          <motion.section
+            key={active}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            {active === "profile" && (
+              <div className="space-y-6">
+                <Card title="Identidade" desc="Essas informações aparecem no seu perfil e assinatura de e-mail.">
+                  <div className="flex items-center gap-5 mb-6">
+                    <div className="relative group shrink-0">
+                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-primary/30">
+                        {form.firstName[0]}{form.lastName[0]}
+                      </div>
+                      <button
+                        onClick={() => toast.info("Seletor de imagem em breve.")}
+                        className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-card border-2 border-background shadow-md flex items-center justify-center text-muted-foreground hover:text-primary hover:scale-110 transition-all"
+                      >
+                        <Camera size={13} />
+                      </button>
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-card-foreground">{form.firstName} {form.lastName}</p>
+                      <p className="text-xs text-muted-foreground">Administradora · Ativa há 2 anos</p>
+                      <Button variant="outline" size="sm" className="mt-2 gap-1.5 text-xs">
+                        <Camera size={12} /> Alterar avatar
+                      </Button>
+                    </div>
+                  </div>
 
-                     <div className="space-y-2">
-                        <Label htmlFor="email">E-mail</Label>
-                        <div className="relative">
-                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                           <Input id="email" className="pl-10" placeholder="seu@email.com" defaultValue="konohafamilia@gmail.com" />
-                        </div>
-                     </div>
-
-
-                     <div className="space-y-2">
-                        <Label htmlFor="bio">Bio curta</Label>
-                        <textarea 
-                           className="w-full min-h-[100px] bg-background border border-border rounded-lg p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                           placeholder="Conte um pouco sobre você..."
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label="Nome">
+                      <Input
+                        value={form.firstName}
+                        onChange={(e) => setForm(f => ({ ...f, firstName: e.target.value }))}
+                        className="h-11 rounded-xl"
+                      />
+                    </Field>
+                    <Field label="Sobrenome">
+                      <Input
+                        value={form.lastName}
+                        onChange={(e) => setForm(f => ({ ...f, lastName: e.target.value }))}
+                        className="h-11 rounded-xl"
+                      />
+                    </Field>
+                    <Field label="E-mail">
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                        <Input
+                          value={form.email}
+                          onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
+                          type="email"
+                          className="h-11 pl-10 rounded-xl"
                         />
-                     </div>
-                  </div>
-               </div>
-            </TabsContent>
-
-            <TabsContent value="notifications">
-               <div className="section-card p-6 max-w-2xl space-y-6">
-                  <h3 className="text-lg font-bold text-card-foreground mb-4">Preferências de Notificação</h3>
-                  
-                  <div className="space-y-4">
-                     <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
-                        <div className="space-y-0.5">
-                           <p className="text-sm font-bold text-card-foreground">E-mail Marketing</p>
-                           <p className="text-xs text-muted-foreground">Receba novidades e promoções por e-mail.</p>
-                        </div>
-                        <Switch />
-                     </div>
-
-                     <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
-                        <div className="space-y-0.5">
-                           <p className="text-sm font-bold text-card-foreground">Alertas de Vencimento</p>
-                           <p className="text-xs text-muted-foreground">Notificar quando contratos estiverem próximos do vencimento.</p>
-                        </div>
-                        <Switch defaultChecked />
-                     </div>
-
-                     <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
-                        <div className="space-y-0.5">
-                           <p className="text-sm font-bold text-card-foreground">Novas Mensagens</p>
-                           <p className="text-xs text-muted-foreground">Receber notificações quando um colega de equipe enviar uma mensagem.</p>
-                        </div>
-                        <Switch defaultChecked />
-                     </div>
-                  </div>
-               </div>
-            </TabsContent>
-
-            <TabsContent value="appearance">
-               <div className="section-card p-6 max-w-2xl">
-                  <h3 className="text-lg font-bold text-card-foreground mb-6">Tema e Layout</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div 
-                      onClick={() => setTheme("dark")}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${theme === "dark" ? "border-primary bg-primary/5" : "border-border hover:border-border/80"}`}
-                    >
-                      <div className="w-full h-24 bg-slate-900 rounded-md mb-3 flex items-center justify-center">
-                        <Moon className="text-white" size={24} />
                       </div>
-                      <p className="text-xs font-bold text-center">Modo Escuro</p>
-                    </div>
-
-                    <div 
-                      onClick={() => setTheme("light")}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${theme === "light" ? "border-primary bg-primary/5" : "border-border hover:border-border/80"}`}
-                    >
-                      <div className="w-full h-24 bg-white rounded-md mb-3 flex items-center justify-center border border-slate-200">
-                        <Sun className="text-slate-400" size={24} />
-                      </div>
-                      <p className="text-xs font-bold text-center">Modo Claro</p>
-                    </div>
-
-                    <div 
-                      onClick={() => setTheme("system")}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${theme === "system" ? "border-primary bg-primary/5" : "border-border hover:border-border/80"}`}
-                    >
-                      <div className="w-full h-24 bg-gradient-to-br from-slate-900 to-white rounded-md mb-3 flex items-center justify-center border border-slate-200">
-                        <Smartphone className="text-slate-500" size={24} />
-                      </div>
-                      <p className="text-xs font-bold text-center">Sistema</p>
-                    </div>
+                    </Field>
+                    <Field label="Telefone">
+                      <Input
+                        value={form.phone}
+                        onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
+                        className="h-11 rounded-xl"
+                      />
+                    </Field>
                   </div>
-               </div>
-            </TabsContent>
 
-            <TabsContent value="security">
-               <div className="section-card p-6 max-w-2xl space-y-6">
-                  <h3 className="text-lg font-bold text-card-foreground mb-4">Segurança da Conta</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                       <Label htmlFor="currentPass">Senha Atual</Label>
-                       <Input id="currentPass" type="password" placeholder="••••••••" />
+                  <div className="mt-4">
+                    <Field label="Biografia">
+                      <textarea
+                        value={form.bio}
+                        onChange={(e) => setForm(f => ({ ...f, bio: e.target.value }))}
+                        className="w-full min-h-[88px] bg-muted/30 border border-border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-background transition-colors"
+                        placeholder="Conte um pouco sobre você..."
+                      />
+                    </Field>
+                  </div>
+                </Card>
+
+                <Card title="Idioma & Região" desc="Personalize formatos de data, moeda e fuso horário.">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label="Idioma">
+                      <div className="relative">
+                        <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                        <Input defaultValue="Português (Brasil)" className="h-11 pl-10 rounded-xl" readOnly />
+                      </div>
+                    </Field>
+                    <Field label="Fuso horário">
+                      <Input defaultValue="GMT-03:00 · Brasília" className="h-11 rounded-xl" readOnly />
+                    </Field>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {active === "notifications" && (
+              <Card title="Preferências de notificação" desc="Escolha quando e como você quer ser avisado.">
+                <div className="space-y-2">
+                  {[
+                    { key: "vencimentos", label: "Alertas de vencimento",  desc: "Avisos sobre contratos e documentos próximos do prazo.", critical: true },
+                    { key: "mensagens",   label: "Novas mensagens",         desc: "Notifica quando alguém da equipe envia mensagem." },
+                    { key: "email",       label: "E-mails de sistema",      desc: "Relatórios de uso e confirmações importantes." },
+                    { key: "reports",     label: "Resumo semanal",          desc: "Resumo das métricas principais toda segunda-feira." },
+                    { key: "marketing",   label: "E-mail marketing",        desc: "Novidades e atualizações do produto." },
+                  ].map((n) => (
+                    <div
+                      key={n.key}
+                      className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-card-foreground flex items-center gap-2">
+                          {n.label}
+                          {n.critical && (
+                            <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                              Crítico
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{n.desc}</p>
+                      </div>
+                      <Switch
+                        checked={notifs[n.key as keyof typeof notifs]}
+                        onCheckedChange={(v) => setNotifs(p => ({ ...p, [n.key]: v }))}
+                      />
                     </div>
-                    <div className="space-y-2">
-                       <Label htmlFor="newPass">Nova Senha</Label>
-                       <Input id="newPass" type="password" placeholder="••••••••" />
-                    </div>
-                    <Button variant="outline" className="w-full gap-2">
-                       <Lock size={14} /> Atualizar Senha
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {active === "appearance" && (
+              <Card title="Tema visual" desc="Altera o modo de cores e contraste da interface.">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {[
+                    { key: "light" as const, label: "Claro",  icon: Sun,  preview: "bg-white",        desc: "Melhor para o dia" },
+                    { key: "dark"  as const, label: "Escuro", icon: Moon, preview: "bg-slate-900",    desc: "Menor cansaço visual" },
+                  ].map((t) => {
+                    const isActive = theme === t.key;
+                    return (
+                      <button
+                        key={t.key}
+                        onClick={() => {
+                          setTheme(t.key);
+                          toast.success(`Tema ${t.label.toLowerCase()} ativado.`);
+                        }}
+                        className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all text-left ${
+                          isActive
+                            ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                            : "border-border hover:border-primary/40 bg-card"
+                        }`}
+                      >
+                        {isActive && (
+                          <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                            <Check size={12} className="text-white" />
+                          </span>
+                        )}
+                        <div className={`w-full h-24 rounded-xl mb-3 flex items-center justify-center border border-border/40 ${t.preview}`}>
+                          <t.icon size={24} className={t.key === "dark" ? "text-white" : "text-amber-500"} />
+                        </div>
+                        <p className="text-sm font-bold text-card-foreground">{t.label}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{t.desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-5 border-t border-border/40">
+                  <p className="text-xs font-bold text-card-foreground mb-3">Densidade da interface</p>
+                  <div className="inline-flex bg-muted/30 border border-border p-1 rounded-xl">
+                    {["Confortável", "Compacta"].map((d, i) => (
+                      <button
+                        key={d}
+                        className={`px-4 h-9 rounded-lg text-xs font-bold transition-all ${
+                          i === 0
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {active === "security" && (
+              <div className="space-y-6">
+                <Card title="Senha" desc="Use uma senha forte com no mínimo 8 caracteres.">
+                  <div className="grid gap-4 max-w-md">
+                    <Field label="Senha atual">
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                        <Input type="password" placeholder="••••••••" className="h-11 pl-10 rounded-xl" />
+                      </div>
+                    </Field>
+                    <Field label="Nova senha">
+                      <div className="relative">
+                        <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                        <Input type="password" placeholder="Mínimo 8 caracteres" className="h-11 pl-10 rounded-xl" />
+                      </div>
+                    </Field>
+                    <Button variant="outline" className="gap-2 h-11 rounded-xl w-fit">
+                      <Lock size={14} /> Atualizar senha
                     </Button>
                   </div>
+                </Card>
 
-                  <div className="pt-6 border-t border-border mt-8">
-                     <p className="text-sm font-bold text-status-danger mb-1">Encerrar Sessão</p>
-                     <p className="text-xs text-muted-foreground mb-4">Você será desconectado de todos os seus dispositivos.</p>
-                     <Button variant="destructive" size="sm" className="gap-2">
-                        <LogOut size={14} /> Sair do Sistema
-                     </Button>
+                <Card title="Sessões ativas" desc="Dispositivos com acesso à sua conta.">
+                  <div className="space-y-2">
+                    {[
+                      { device: "MacBook Pro · Chrome", location: "Curitiba, PR", last: "agora", current: true },
+                      { device: "iPhone 15 · Safari", location: "Curitiba, PR", last: "há 2 horas", current: false },
+                      { device: "Windows 11 · Edge", location: "São Paulo, SP", last: "há 3 dias", current: false },
+                    ].map((s) => (
+                      <div key={s.device} className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-muted/20">
+                        <div className="w-9 h-9 rounded-lg bg-muted/60 flex items-center justify-center">
+                          <DeviceIcon size={15} className="text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-card-foreground truncate flex items-center gap-2">
+                            {s.device}
+                            {s.current && (
+                              <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                Atual
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">{s.location} · {s.last}</p>
+                        </div>
+                        {!s.current && (
+                          <Button variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive">
+                            Encerrar
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                   </div>
-               </div>
-            </TabsContent>
-          </div>
-        </Tabs>
+                </Card>
+
+                <Card
+                  title="Zona de perigo"
+                  desc="Ações sensíveis. Use com cautela."
+                  variant="danger"
+                >
+                  <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 shrink-0 rounded-lg bg-destructive/10 flex items-center justify-center">
+                        <AlertTriangle size={15} className="text-destructive" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-card-foreground">Encerrar todas as sessões</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Você será deslogado de todos os dispositivos imediatamente.
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="destructive" size="sm" className="gap-2 shrink-0">
+                      <LogOut size={13} /> Sair de tudo
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            )}
+          </motion.section>
+        </AnimatePresence>
       </div>
     </>
   );
 };
+
+/* ── Building blocks ─────────────────────────────────────── */
+
+const Card = ({
+  title, desc, children, variant = "default",
+}: {
+  title: string;
+  desc?: string;
+  children: React.ReactNode;
+  variant?: "default" | "danger";
+}) => (
+  <div className={`section-card p-6 ${variant === "danger" ? "border-destructive/20" : ""}`}>
+    <div className="mb-5">
+      <h3 className={`text-base font-bold ${variant === "danger" ? "text-destructive" : "text-card-foreground"}`}>
+        {title}
+      </h3>
+      {desc && <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>}
+    </div>
+    {children}
+  </div>
+);
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="space-y-1.5">
+    <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{label}</Label>
+    {children}
+  </div>
+);
 
 export default Settings;

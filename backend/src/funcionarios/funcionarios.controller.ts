@@ -8,12 +8,20 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { FuncionariosService } from './funcionarios.service';
+import {
+  FuncionariosService,
+  CreateFuncionarioComAcessoDto,
+} from './funcionarios.service';
 import { Prisma } from '@prisma/client';
 
 @Controller('funcionarios')
 export class FuncionariosController {
   constructor(private readonly funcionariosService: FuncionariosService) {}
+
+  @Post('register')
+  createComAcesso(@Body() dto: CreateFuncionarioComAcessoDto) {
+    return this.funcionariosService.createComAcesso(dto);
+  }
 
   @Post()
   create(@Body() createFuncionarioDto: Prisma.funcionariosCreateInput) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ContractsTable from "@/components/dashboard/ContractsTable";
 import { Plus, Filter, Search, FileText, TrendingUp } from "lucide-react";
 import {
@@ -13,52 +13,111 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Contract } from "@/types/dashboard";
+import { Contrato, Cliente } from "@/services/types";
 import { toast } from "sonner";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/contexts/AuthContext";
+import { getContratos, createContrato } from "@/services/contratosService";
+import { getClientesAtivos } from "@/services/clientesService";
 import { motion } from "framer-motion";
 
+type ContratoComCliente = Contrato & {
+  clientes?: Pick<Cliente, "id" | "razao_social" | "nome_fantasia" | "nome_completo">;
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  rascunho: "Rascunho",
+  aprovado: "Aprovado",
+  em_execucao: "Ativo",
+  concluido: "Concluído",
+  cancelado: "Cancelado",
+};
+
+function toContractRow(c: ContratoComCliente): Contract {
+  const client =
+    c.clientes?.razao_social ||
+    c.clientes?.nome_fantasia ||
+    c.clientes?.nome_completo ||
+    c.cliente_id;
+
+  const date = c.data_inicio
+    ? new Date(c.data_inicio + "T12:00:00").toLocaleDateString("pt-BR")
+    : undefined;
+
+  const days = c.data_fim_previsto
+    ? new Date(c.data_fim_previsto + "T12:00:00").toLocaleDateString("pt-BR")
+    : "Em aberto";
+
+  return {
+    client,
+    code: c.numero,
+    status: STATUS_LABELS[c.status] ?? c.status,
+    days,
+    action: "Ver",
+    date,
+  };
+}
+
 const Contracts = () => {
-  const [contracts, setContracts] = useLocalStorage<Contract[]>("gr:contracts", []);
+  const { token } = useAuth();
+  const [contratos, setContratos] = useState<ContratoComCliente[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [newClient, setNewClient] = useState("");
-  const [newCode, setNewCode] = useState("");
-  const [newDate, setNewDate] = useState("");
-  const [newStatus, setNewStatus] = useState<"Ativo" | "Pendente">("Pendente");
+  const [newClienteId, setNewClienteId] = useState("");
+  const [newNumero, setNewNumero] = useState("");
+  const [newDataInicio, setNewDataInicio] = useState("");
+  const [newDataFim, setNewDataFim] = useState("");
+  const [newStatus, setNewStatus] = useState<Contrato["status"]>("rascunho");
 
-  const filteredContracts = contracts.filter(c =>
+  useEffect(() => {
+    if (!token) return;
+    Promise.all([
+      getContratos(token),
+      getClientesAtivos(token),
+    ]).then(([contratosRes, clientesRes]) => {
+      if (contratosRes.error) toast.error(`Erro ao carregar contratos: ${contratosRes.error}`);
+      else if (contratosRes.data) setContratos(contratosRes.data as ContratoComCliente[]);
+
+      if (clientesRes.data) setClientes(clientesRes.data);
+    }).finally(() => setIsLoading(false));
+  }, [token]);
+
+  const rows = contratos.map(toContractRow);
+
+  const filtered = rows.filter(c =>
     c.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const ativos = contracts.filter(c => c.status === "Ativo").length;
-  const pendentes = contracts.filter(c => c.status === "Pendente").length;
+  const ativos = contratos.filter(c => c.status === "em_execucao").length;
+  const pendentes = contratos.filter(c => c.status === "rascunho" || c.status === "aprovado").length;
 
-  const handleAddContract = () => {
-    if (!newClient || !newCode) {
-      toast.error("Por favor, preencha o nome do cliente e o código.");
+  const handleAddContract = async () => {
+    if (!newClienteId || !newNumero || !newDataInicio) {
+      toast.error("Selecione o cliente, preencha o número e a data de início.");
       return;
     }
 
-    const newContract: Contract = {
-      client: newClient,
-      code: newCode,
+    const payload: Partial<Contrato> & { cliente_id: string } = {
+      cliente_id: newClienteId,
+      numero: newNumero,
+      data_inicio: newDataInicio,
+      data_fim_previsto: newDataFim || undefined,
       status: newStatus,
-      days: "Recém criado",
-      action: "Ver",
-      date: newDate ? new Date(newDate + "T12:00:00").toLocaleDateString("pt-BR") : "-",
     };
 
-    setContracts([newContract, ...contracts]);
+    const { data, error } = await createContrato(payload as any, token!);
+    if (error) { toast.error(`Erro: ${error}`); return; }
+
+    setContratos(prev => [data as ContratoComCliente, ...prev]);
     setIsDialogOpen(false);
-    setNewClient("");
-    setNewCode("");
-    setNewDate("");
-    setNewStatus("Pendente");
-    toast.success("Contrato adicionado com sucesso!");
+    setNewClienteId(""); setNewNumero(""); setNewDataInicio(""); setNewDataFim(""); setNewStatus("rascunho");
+    toast.success("Contrato cadastrado com sucesso!");
   };
 
   return (
@@ -96,52 +155,50 @@ const Contracts = () => {
             <DialogContent className="sm:max-w-[440px]">
               <DialogHeader>
                 <DialogTitle>Novo Contrato</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados abaixo para cadastrar um novo contrato no sistema.
-                </DialogDescription>
+                <DialogDescription>Preencha os dados para cadastrar um novo contrato.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="client" className="text-right text-sm">Cliente</Label>
-                  <Input
-                    id="client"
-                    placeholder="Nome do cliente"
-                    className="col-span-3"
-                    value={newClient}
-                    onChange={(e) => setNewClient(e.target.value)}
-                  />
+                  <Label className="text-right text-sm">Cliente</Label>
+                  <div className="col-span-3">
+                    <Select value={newClienteId} onValueChange={setNewClienteId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um cliente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clientes.map(c => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.razao_social || c.nome_fantasia || c.nome_completo || c.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="code" className="text-right text-sm">Código</Label>
-                  <Input
-                    id="code"
-                    placeholder="Ex: CTR-2024-001"
-                    className="col-span-3"
-                    value={newCode}
-                    onChange={(e) => setNewCode(e.target.value)}
-                  />
+                  <Label className="text-right text-sm">Número</Label>
+                  <Input value={newNumero} onChange={(e) => setNewNumero(e.target.value)} className="col-span-3" placeholder="Ex: CTR-2026-001" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="status" className="text-right text-sm">Status</Label>
-                  <select
-                    id="status"
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value as "Ativo" | "Pendente")}
-                    className="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
-                  >
-                    <option value="Pendente">Pendente</option>
-                    <option value="Ativo">Ativo</option>
-                  </select>
+                  <Label className="text-right text-sm">Início</Label>
+                  <Input type="date" value={newDataInicio} onChange={(e) => setNewDataInicio(e.target.value)} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="date" className="text-right text-sm">Vencimento</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    className="col-span-3"
-                    value={newDate}
-                    onChange={(e) => setNewDate(e.target.value)}
-                  />
+                  <Label className="text-right text-sm">Vencimento</Label>
+                  <Input type="date" value={newDataFim} onChange={(e) => setNewDataFim(e.target.value)} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-sm">Status</Label>
+                  <div className="col-span-3">
+                    <Select value={newStatus} onValueChange={(v) => setNewStatus(v as Contrato["status"])}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="rascunho">Rascunho</SelectItem>
+                        <SelectItem value="aprovado">Aprovado</SelectItem>
+                        <SelectItem value="em_execucao">Em Execução</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
               <DialogFooter>
@@ -153,12 +210,11 @@ const Contracts = () => {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
-          { label: "Total de Contratos", value: contracts.length, icon: FileText, color: "text-primary" },
-          { label: "Contratos Ativos", value: ativos, icon: TrendingUp, color: "text-green-500" },
-          { label: "Pendentes", value: pendentes, icon: Filter, color: "text-yellow-500" },
+          { label: "Total de Contratos", value: isLoading ? "…" : contratos.length, icon: FileText, color: "text-primary" },
+          { label: "Em Execução", value: isLoading ? "…" : ativos, icon: TrendingUp, color: "text-green-500" },
+          { label: "Pendentes", value: isLoading ? "…" : pendentes, icon: Filter, color: "text-yellow-500" },
         ].map((item, i) => (
           <motion.div
             key={item.label}
@@ -179,7 +235,7 @@ const Contracts = () => {
       </div>
 
       <div className="space-y-6">
-        <ContractsTable data={filteredContracts} />
+        <ContractsTable data={filtered} />
       </div>
     </>
   );

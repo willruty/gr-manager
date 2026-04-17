@@ -14,34 +14,28 @@ import Tasks from "./pages/Tasks.tsx";
 import Team from "./pages/Team.tsx";
 import Reports from "./pages/Reports.tsx";
 import Settings from "./pages/Settings.tsx";
+import Login from "./pages/Login.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import Sidebar from "@/components/dashboard/Sidebar.tsx";
 import Header from "@/components/dashboard/Header.tsx";
-import Footer from "@/components/dashboard/Footer.tsx";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
 const AppLayout = () => {
   const [collapsed] = useLocalStorage<boolean>("gr:sidebar-collapsed", false);
-
   const sidebarWidth = collapsed ? 72 : 256;
 
   return (
     <div className="min-h-screen bg-background font-sans overflow-hidden">
-      {/* Global Sidebar - Never remounts */}
       <Sidebar />
-
-      {/* Main content area - width syncs with sidebar */}
       <motion.div
         animate={{ paddingLeft: sidebarWidth }}
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         className="w-full flex flex-col min-h-screen relative z-10"
       >
-        {/* Global Header - Never remounts */}
         <Header />
-
-        {/* Page content - stretches to fill all available space */}
         <main className="flex-1 px-8 py-6 overflow-y-auto relative">
           <div className="w-full">
             <Routes>
@@ -57,10 +51,19 @@ const AppLayout = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
-          <Footer />
         </main>
       </motion.div>
     </div>
+  );
+};
+
+const AuthGate = () => {
+  const { token } = useAuth();
+  if (!token) return <Login />;
+  return (
+    <BrowserRouter>
+      <AppLayout />
+    </BrowserRouter>
   );
 };
 
@@ -70,13 +73,12 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AppLayout />
-        </BrowserRouter>
+        <AuthProvider>
+          <AuthGate />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
 );
 
 export default App;
-

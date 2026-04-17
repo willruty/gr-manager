@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import Footer from "./Footer";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface DashboardLayoutProps {
@@ -19,8 +18,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <Sidebar />
 
       <motion.div
-        animate={{ marginLeft: collapsed ? 88 : 272 }}
-        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ marginLeft: collapsed ? 76 : 264 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         className="flex-1 flex flex-col min-h-screen relative z-10"
       >
         <Header />
@@ -37,7 +36,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <div className="max-w-7xl mx-auto">
               {children}
             </div>
-            <Footer />
           </motion.main>
         </AnimatePresence>
       </motion.div>

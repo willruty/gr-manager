@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ClientsTable, { ClientData } from "@/components/dashboard/ClientsTable";
 import { Plus, Search, Users, Filter, UserCheck, UserX } from "lucide-react";
 import {
@@ -13,50 +13,81 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/contexts/AuthContext";
+import { getClientes, createCliente } from "@/services/clientesService";
+import { Cliente } from "@/services/types";
 import { motion } from "framer-motion";
 
+function toClientData(c: Cliente): ClientData {
+  const name = c.razao_social || c.nome_fantasia || c.nome_completo || "—";
+  const location = [c.cidade, c.estado].filter(Boolean).join(", ") || "—";
+  return {
+    id: c.id,
+    name,
+    email: c.email || "—",
+    phone: c.celular || c.telefone || "—",
+    location,
+    status: c.ativo ? "Ativo" : "Inativo",
+  };
+}
+
 const Clients = () => {
-  const [clients, setClients] = useLocalStorage<ClientData[]>("gr:clients", []);
+  const { token } = useAuth();
+  const [clients, setClients] = useState<Cliente[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [newName, setNewName] = useState("");
+  const [newTipo, setNewTipo] = useState<"pessoa_juridica" | "pessoa_fisica">("pessoa_juridica");
+  const [newNome, setNewNome] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [newPhone, setNewPhone] = useState("");
-  const [newLocation, setNewLocation] = useState("");
+  const [newTelefone, setNewTelefone] = useState("");
+  const [newCidade, setNewCidade] = useState("");
 
-  const filteredClients = clients.filter(c =>
+  useEffect(() => {
+    if (!token) return;
+    getClientes(token).then(({ data, error }) => {
+      if (error) toast.error(`Erro ao carregar clientes: ${error}`);
+      else if (data) setClients(data);
+    }).finally(() => setIsLoading(false));
+  }, [token]);
+
+  const clientData = clients.map(toClientData);
+
+  const filtered = clientData.filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const ativos = clients.filter(c => c.status === "Ativo").length;
-  const inativos = clients.filter(c => c.status === "Inativo").length;
+  const ativos = clientData.filter(c => c.status === "Ativo").length;
+  const inativos = clientData.filter(c => c.status === "Inativo").length;
 
-  const handleAddClient = () => {
-    if (!newName || !newEmail) {
-      toast.error("Por favor, preencha o nome e o e-mail do cliente.");
+  const handleAddClient = async () => {
+    if (!newNome) {
+      toast.error("Preencha o nome do cliente.");
       return;
     }
 
-    const newClient: ClientData = {
-      id: crypto.randomUUID(),
-      name: newName,
-      email: newEmail,
-      phone: newPhone || "-",
-      location: newLocation || "-",
-      status: "Ativo",
+    const payload: Partial<Cliente> = {
+      tipo: newTipo,
+      email: newEmail || undefined,
+      celular: newTelefone || undefined,
+      cidade: newCidade || undefined,
+      ativo: true,
+      ...(newTipo === "pessoa_juridica"
+        ? { razao_social: newNome }
+        : { nome_completo: newNome }),
     };
 
-    setClients([newClient, ...clients]);
+    const { data, error } = await createCliente(payload, token!);
+    if (error) { toast.error(`Erro: ${error}`); return; }
+
+    setClients(prev => [data!, ...prev]);
     setIsDialogOpen(false);
-    setNewName("");
-    setNewEmail("");
-    setNewPhone("");
-    setNewLocation("");
+    setNewNome(""); setNewEmail(""); setNewTelefone(""); setNewCidade("");
     toast.success("Cliente cadastrado com sucesso!");
   };
 
@@ -95,43 +126,54 @@ const Clients = () => {
             <DialogContent className="sm:max-w-[440px]">
               <DialogHeader>
                 <DialogTitle>Novo Cliente</DialogTitle>
-                <DialogDescription>
-                  Adicione um novo cliente à sua base de dados.
-                </DialogDescription>
+                <DialogDescription>Adicione um novo cliente à sua base de dados.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right text-sm">Nome</Label>
-                  <Input id="name" value={newName} onChange={(e) => setNewName(e.target.value)} className="col-span-3" placeholder="Nome completo" />
+                  <Label className="text-right text-sm">Tipo</Label>
+                  <div className="col-span-3">
+                    <Select value={newTipo} onValueChange={(v) => setNewTipo(v as typeof newTipo)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pessoa_juridica">Pessoa Jurídica</SelectItem>
+                        <SelectItem value="pessoa_fisica">Pessoa Física</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right text-sm">E-mail</Label>
-                  <Input id="email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="col-span-3" placeholder="email@exemplo.com" />
+                  <Label className="text-right text-sm">
+                    {newTipo === "pessoa_juridica" ? "Razão Social" : "Nome"}
+                  </Label>
+                  <Input value={newNome} onChange={(e) => setNewNome(e.target.value)} className="col-span-3" placeholder="Nome completo / Razão social" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="phone" className="text-right text-sm">Telefone</Label>
-                  <Input id="phone" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className="col-span-3" placeholder="(00) 00000-0000" />
+                  <Label className="text-right text-sm">E-mail</Label>
+                  <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="col-span-3" placeholder="email@exemplo.com" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="location" className="text-right text-sm">Localização</Label>
-                  <Input id="location" value={newLocation} onChange={(e) => setNewLocation(e.target.value)} className="col-span-3" placeholder="Cidade, Estado" />
+                  <Label className="text-right text-sm">Telefone</Label>
+                  <Input value={newTelefone} onChange={(e) => setNewTelefone(e.target.value)} className="col-span-3" placeholder="(00) 90000-0000" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-sm">Cidade</Label>
+                  <Input value={newCidade} onChange={(e) => setNewCidade(e.target.value)} className="col-span-3" placeholder="Ex: Curitiba" />
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                <Button type="button" onClick={handleAddClient}>Cadastrar Cliente</Button>
+                <Button type="button" onClick={handleAddClient}>Cadastrar</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
-          { label: "Total de Clientes", value: clients.length, icon: Users, color: "text-primary" },
-          { label: "Clientes Ativos", value: ativos, icon: UserCheck, color: "text-green-500" },
-          { label: "Inativos", value: inativos, icon: UserX, color: "text-red-500" },
+          { label: "Total de Clientes", value: isLoading ? "…" : clients.length, icon: Users, color: "text-primary" },
+          { label: "Clientes Ativos", value: isLoading ? "…" : ativos, icon: UserCheck, color: "text-green-500" },
+          { label: "Inativos", value: isLoading ? "…" : inativos, icon: UserX, color: "text-red-500" },
         ].map((item, i) => (
           <motion.div
             key={item.label}
@@ -152,7 +194,7 @@ const Clients = () => {
       </div>
 
       <div className="space-y-6">
-        <ClientsTable data={filteredClients} />
+        <ClientsTable data={filtered} />
       </div>
     </>
   );

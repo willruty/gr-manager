@@ -1,6 +1,17 @@
 import { api } from './api';
 import { Funcionario } from './types';
 
+export interface RegisterFuncionarioDto {
+  nome: string;
+  cargo: string;
+  email: string;
+  senha: string;
+  cargo_sistema?: 'admin' | 'operacional' | 'financeiro' | 'tecnico' | 'visualizador';
+  cpf?: string;
+  telefone?: string;
+  celular?: string;
+}
+
 export async function getFuncionarios(
   token: string,
   skip?: number,
@@ -70,6 +81,18 @@ export async function updateFuncionario(
     }
   );
 
+  return { data, error };
+}
+
+export async function registerFuncionario(
+  dto: RegisterFuncionarioDto,
+  token: string
+): Promise<{ data: Funcionario | null; error: string | null }> {
+  const { data, error } = await api.post<Funcionario>(
+    '/funcionarios/register',
+    dto,
+    { Authorization: `Bearer ${token}` }
+  );
   return { data, error };
 }
 
