@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import ContractsTable from "@/components/dashboard/ContractsTable";
 import { Plus, Filter, Search, FileText, TrendingUp } from "lucide-react";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -59,6 +67,8 @@ function toContractRow(c: ContratoComCliente): Contract {
   };
 }
 
+const ITEMS_PER_PAGE = 10;
+
 const Contracts = () => {
   const { token } = useAuth();
   const [contratos, setContratos] = useState<ContratoComCliente[]>([]);
@@ -66,6 +76,7 @@ const Contracts = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [newClienteId, setNewClienteId] = useState("");
   const [newNumero, setNewNumero] = useState("");
@@ -93,6 +104,13 @@ const Contracts = () => {
     c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const ativos = contratos.filter(c => c.status === "em_execucao").length;
   const pendentes = contratos.filter(c => c.status === "rascunho" || c.status === "aprovado").length;
@@ -235,7 +253,40 @@ const Contracts = () => {
       </div>
 
       <div className="space-y-6">
-        <ContractsTable data={filtered} />
+        <ContractsTable data={paginated} isLoading={isLoading} />
+        {filtered.length > ITEMS_PER_PAGE && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.max(1, p - 1)); }}
+                  aria-disabled={currentPage === 1}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === i + 1}
+                    onClick={(e) => { e.preventDefault(); setCurrentPage(i + 1); }}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.min(totalPages, p + 1)); }}
+                  aria-disabled={currentPage === totalPages}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </>
   );

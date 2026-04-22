@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { User, Phone, MapPin, ChevronRight, MoreVertical } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface ClientData {
   id: string;
@@ -18,9 +19,10 @@ export interface ClientData {
 
 interface ClientsTableProps {
   data: ClientData[];
+  isLoading?: boolean;
 }
 
-const ClientsTable = ({ data }: ClientsTableProps) => {
+const ClientsTable = ({ data, isLoading = false }: ClientsTableProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -40,7 +42,17 @@ const ClientsTable = ({ data }: ClientsTableProps) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
-            {data.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="table-row-hover">
+                  <td className="py-4"><Skeleton className="h-4 w-36" /></td>
+                  <td className="py-4"><Skeleton className="h-4 w-24" /></td>
+                  <td className="py-4"><Skeleton className="h-4 w-28" /></td>
+                  <td className="py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                  <td className="py-4 text-right flex justify-end"><Skeleton className="h-8 w-20 rounded-md" /></td>
+                </tr>
+              ))
+            ) : data.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-muted-foreground italic">
                   Nenhum cliente encontrado.

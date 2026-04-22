@@ -31,6 +31,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            id="dashboard-main"
             className="flex-1 p-8 overflow-y-auto relative"
           >
             <div className="max-w-7xl mx-auto">

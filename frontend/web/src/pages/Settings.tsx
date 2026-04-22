@@ -1,7 +1,8 @@
 import { useState } from "react";
 import {
   User, Bell, Shield, Palette, Mail, Lock, LogOut, Save, Moon, Sun,
-  Camera, ChevronRight, Smartphone as DeviceIcon, Key, Globe, Check, AlertTriangle
+  Camera, ChevronRight, Key, Globe, Check, AlertTriangle,
+  AlignJustify, AlignCenter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/sonner";
 import { useTheme } from "@/components/theme-provider.tsx";
+import { useDensity } from "@/contexts/DensityContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Section = "profile" | "notifications" | "appearance" | "security";
@@ -22,6 +24,7 @@ const NAV: { key: Section; label: string; icon: typeof User; desc: string }[] = 
 
 const Settings = () => {
   const { theme, setTheme } = useTheme();
+  const { density, setDensity } = useDensity();
   const [active, setActive] = useState<Section>("profile");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -278,20 +281,85 @@ const Settings = () => {
                 </div>
 
                 <div className="pt-5 border-t border-border/40">
-                  <p className="text-xs font-bold text-card-foreground mb-3">Densidade da interface</p>
-                  <div className="inline-flex bg-muted/30 border border-border p-1 rounded-xl">
-                    {["Confortável", "Compacta"].map((d, i) => (
-                      <button
-                        key={d}
-                        className={`px-4 h-9 rounded-lg text-xs font-bold transition-all ${
-                          i === 0
-                            ? "bg-background text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {d}
-                      </button>
-                    ))}
+                  <p className="text-xs font-bold text-card-foreground mb-0.5">Densidade da interface</p>
+                  <p className="text-[11px] text-muted-foreground mb-4">
+                    Ajusta o espaçamento e a altura dos elementos do painel.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 max-w-sm">
+                    {([
+                      {
+                        key: "comfortable" as const,
+                        label: "Confortável",
+                        desc: "Padrão",
+                        icon: AlignJustify,
+                        rows: [1, 0.75, 1, 0.75],
+                      },
+                      {
+                        key: "compact" as const,
+                        label: "Compacta",
+                        desc: "Mais conteúdo",
+                        icon: AlignCenter,
+                        rows: [1, 0.5, 1, 0.5, 1, 0.5],
+                        badge: "Novo",
+                      },
+                    ] as const).map((d) => {
+                      const isActive = density === d.key;
+                      return (
+                        <button
+                          key={d.key}
+                          onClick={() => {
+                            setDensity(d.key);
+                            toast.success(
+                              `Densidade ${d.label.toLowerCase()} ativada.`,
+                              { duration: 2000 }
+                            );
+                          }}
+                          className={`relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all text-left ${
+                            isActive
+                              ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                              : "border-border hover:border-primary/40 bg-card"
+                          }`}
+                        >
+                          {/* Active check */}
+                          {isActive && (
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center"
+                            >
+                              <Check size={11} className="text-white" />
+                            </motion.span>
+                          )}
+
+                          {/* "Novo" badge */}
+                          {"badge" in d && d.badge && !isActive && (
+                            <span className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-widest bg-primary/15 text-primary px-1.5 py-0.5 rounded-md">
+                              {d.badge}
+                            </span>
+                          )}
+
+                          {/* Density preview illustration */}
+                          <div className="w-full h-16 rounded-xl bg-muted/50 mb-3 flex flex-col justify-center px-2.5 gap-0 overflow-hidden">
+                            {d.rows.map((h, i) => (
+                              <div
+                                key={i}
+                                style={{ height: `${h * 6}px`, marginBottom: `${h * 3}px` }}
+                                className={`rounded-full w-full transition-all ${
+                                  i % 2 === 0
+                                    ? "bg-muted-foreground/25"
+                                    : "bg-muted-foreground/10 w-3/4"
+                                }`}
+                              />
+                            ))}
+                          </div>
+
+                          <p className={`text-sm font-bold ${isActive ? "text-primary" : "text-card-foreground"}`}>
+                            {d.label}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{d.desc}</p>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </Card>
@@ -317,39 +385,7 @@ const Settings = () => {
                       <Lock size={14} /> Atualizar senha
                     </Button>
                   </div>
-                </Card>
-
-                <Card title="Sessões ativas" desc="Dispositivos com acesso à sua conta.">
-                  <div className="space-y-2">
-                    {[
-                      { device: "MacBook Pro · Chrome", location: "Curitiba, PR", last: "agora", current: true },
-                      { device: "iPhone 15 · Safari", location: "Curitiba, PR", last: "há 2 horas", current: false },
-                      { device: "Windows 11 · Edge", location: "São Paulo, SP", last: "há 3 dias", current: false },
-                    ].map((s) => (
-                      <div key={s.device} className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-muted/20">
-                        <div className="w-9 h-9 rounded-lg bg-muted/60 flex items-center justify-center">
-                          <DeviceIcon size={15} className="text-muted-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-card-foreground truncate flex items-center gap-2">
-                            {s.device}
-                            {s.current && (
-                              <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                                Atual
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">{s.location} · {s.last}</p>
-                        </div>
-                        {!s.current && (
-                          <Button variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive">
-                            Encerrar
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </Card>
+                </Card> 
 
                 <Card
                   title="Zona de perigo"

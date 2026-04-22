@@ -47,7 +47,7 @@ const Header = () => {
     <>
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
-      <header className="h-16 bg-background/80 flex items-center justify-between px-8 gap-6 sticky top-0 z-20 backdrop-blur-md border-b border-border/50 transition-colors duration-300">
+      <header className="bg-background/80 flex items-center justify-between px-8 gap-6 sticky top-0 z-20 backdrop-blur-md border-b border-border/50 transition-colors duration-300">
         {/* Page Indicator with Animation */}
         <motion.div
           key={location.pathname}

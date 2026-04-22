@@ -1,8 +1,22 @@
 import { motion } from "framer-motion";
 import { FileText, AlertTriangle, FolderClock, Users } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useGsapCounter } from "@/hooks/useGsapCounter";
 import { Contract } from "@/types/dashboard";
 import { ClientData } from "./ClientsTable";
+
+/** Renders a number that counts up from 0 using GSAP. */
+const AnimatedNumber = ({
+  value,
+  delay,
+}: {
+  value: number;
+  delay: number;
+}) => {
+  // starts counting after Framer Motion finishes the card entrance (~delay + 0.3s)
+  const ref = useGsapCounter(value, delay + 0.3, 1.0);
+  return <span ref={ref as React.RefObject<HTMLSpanElement>}>0</span>;
+};
 
 const StatCards = () => {
   const [contracts] = useLocalStorage<Contract[]>("gr:contracts", []);
@@ -67,20 +81,45 @@ const StatCards = () => {
           }`}
         >
           {/* Decorative circle */}
-          <div className={`absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-10 ${card.bg ? "bg-white" : "bg-primary"}`} />
+          <div
+            className={`absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-10 ${
+              card.bg ? "bg-white" : "bg-primary"
+            }`}
+          />
 
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">
-              <span className={`text-[10px] font-black uppercase tracking-widest leading-tight ${card.bg ? "opacity-80" : "text-muted-foreground"}`}>
+              <span
+                className={`text-[10px] font-black uppercase tracking-widest leading-tight ${
+                  card.bg ? "opacity-80" : "text-muted-foreground"
+                }`}
+              >
                 {card.title}
               </span>
-              <card.icon size={15} className={card.bg ? "opacity-70" : "text-primary opacity-70"} />
+              <card.icon
+                size={15}
+                className={card.bg ? "opacity-70" : "text-primary opacity-70"}
+              />
             </div>
 
-            <p className="text-4xl font-black mb-0.5 leading-none">{card.value}</p>
-            <p className={`text-xs ${card.bg ? "opacity-70" : "text-muted-foreground"}`}>{card.subtitle}</p>
+            {/* GSAP counter — Framer animates the card container, GSAP animates the number inside */}
+            <p className="text-4xl font-black mb-0.5 leading-none">
+              <AnimatedNumber value={card.value} delay={card.delay} />
+            </p>
 
-            <p className={`text-[10px] font-medium mt-3 ${card.bg ? "opacity-60" : "text-muted-foreground/60"}`}>
+            <p
+              className={`text-xs ${
+                card.bg ? "opacity-70" : "text-muted-foreground"
+              }`}
+            >
+              {card.subtitle}
+            </p>
+
+            <p
+              className={`text-[10px] font-medium mt-3 ${
+                card.bg ? "opacity-60" : "text-muted-foreground/60"
+              }`}
+            >
               {card.note}
             </p>
           </div>

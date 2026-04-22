@@ -42,7 +42,7 @@ const Login = () => {
         <div className="absolute top-2/3 left-1/3 w-1.5 h-1.5 rounded-full bg-blue-200/30 animate-pulse" style={{ animationDelay: "1s" }} />
 
         <div className="relative z-10 flex items-center gap-3">
-          <Logo className="w-32 h-auto" />
+          <Logo className="w-32 h-auto" animate />
           <span className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40 mt-2">
             Sistema de Gestão
           </span>

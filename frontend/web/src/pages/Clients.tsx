@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import ClientsTable, { ClientData } from "@/components/dashboard/ClientsTable";
 import { Plus, Search, Users, Filter, UserCheck, UserX } from "lucide-react";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,12 +41,15 @@ function toClientData(c: Cliente): ClientData {
   };
 }
 
+const ITEMS_PER_PAGE = 10;
+
 const Clients = () => {
   const { token } = useAuth();
   const [clients, setClients] = useState<Cliente[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [newTipo, setNewTipo] = useState<"pessoa_juridica" | "pessoa_fisica">("pessoa_juridica");
   const [newNome, setNewNome] = useState("");
@@ -61,6 +72,13 @@ const Clients = () => {
     c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const ativos = clientData.filter(c => c.status === "Ativo").length;
   const inativos = clientData.filter(c => c.status === "Inativo").length;
@@ -143,17 +161,28 @@ const Clients = () => {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right text-sm">
-                    {newTipo === "pessoa_juridica" ? "Razão Social" : "Nome"}
+                    {newTipo === "pessoa_juridica" ? "Razão Social" : "Nome"}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input value={newNome} onChange={(e) => setNewNome(e.target.value)} className="col-span-3" placeholder="Nome completo / Razão social" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right text-sm">E-mail</Label>
-                  <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="col-span-3" placeholder="email@exemplo.com" />
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label className="text-right text-sm mt-2.5">E-mail</Label>
+                  <div className="col-span-3">
+                    <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
+                    {newEmail.length > 0 && !(newEmail.includes("@") && newEmail.includes(".")) && (
+                      <p className="text-xs text-destructive mt-1">E-mail inválido</p>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right text-sm">Telefone</Label>
-                  <Input value={newTelefone} onChange={(e) => setNewTelefone(e.target.value)} className="col-span-3" placeholder="(00) 90000-0000" />
+                  <Label className="text-right text-sm">
+                    Telefone{" "}
+                    <span className="text-[10px] font-normal text-muted-foreground">
+                      {newTelefone.length}/15
+                    </span>
+                  </Label>
+                  <Input value={newTelefone} onChange={(e) => setNewTelefone(e.target.value)} className="col-span-3" placeholder="(00) 90000-0000" maxLength={15} />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right text-sm">Cidade</Label>
@@ -194,7 +223,40 @@ const Clients = () => {
       </div>
 
       <div className="space-y-6">
-        <ClientsTable data={filtered} />
+        <ClientsTable data={paginated} isLoading={isLoading} />
+        {filtered.length > ITEMS_PER_PAGE && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.max(1, p - 1)); }}
+                  aria-disabled={currentPage === 1}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === i + 1}
+                    onClick={(e) => { e.preventDefault(); setCurrentPage(i + 1); }}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setCurrentPage(p => Math.min(totalPages, p + 1)); }}
+                  aria-disabled={currentPage === totalPages}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </>
   );

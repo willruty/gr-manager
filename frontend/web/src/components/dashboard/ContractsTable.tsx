@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { AlertTriangle, ChevronRight, FileText, Calendar } from "lucide-react";
 import { Contract } from "@/types/dashboard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContractsTableProps {
   data: Contract[];
+  isLoading?: boolean;
 }
 
-const ContractsTable = ({ data }: ContractsTableProps) => {
+const ContractsTable = ({ data, isLoading = false }: ContractsTableProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -30,7 +32,17 @@ const ContractsTable = ({ data }: ContractsTableProps) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
-            {data.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="table-row-hover">
+                  <td className="py-3"><Skeleton className="h-4 w-36" /></td>
+                  <td className="py-3"><Skeleton className="h-4 w-24" /></td>
+                  <td className="py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                  <td className="py-3"><Skeleton className="h-4 w-20" /></td>
+                  <td className="py-3 text-right flex justify-end"><Skeleton className="h-8 w-20 rounded-md" /></td>
+                </tr>
+              ))
+            ) : data.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-muted-foreground italic">
                   Nenhum contrato encontrado.

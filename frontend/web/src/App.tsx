@@ -14,12 +14,14 @@ import Tasks from "./pages/Tasks.tsx";
 import Team from "./pages/Team.tsx";
 import Reports from "./pages/Reports.tsx";
 import Settings from "./pages/Settings.tsx";
+import Equipments from "./pages/Equipments.tsx";
 import Login from "./pages/Login.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import Sidebar from "@/components/dashboard/Sidebar.tsx";
 import Header from "@/components/dashboard/Header.tsx";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { DensityProvider } from "@/contexts/DensityContext";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +38,7 @@ const AppLayout = () => {
         className="w-full flex flex-col min-h-screen relative z-10"
       >
         <Header />
-        <main className="flex-1 px-8 py-6 overflow-y-auto relative">
+        <main id="dashboard-main" className="flex-1 overflow-y-auto relative">
           <div className="w-full">
             <Routes>
               <Route path="/" element={<Index />} />
@@ -48,6 +50,7 @@ const AppLayout = () => {
               <Route path="/team" element={<Team />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/equipments" element={<Equipments />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
@@ -74,7 +77,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AuthProvider>
-          <AuthGate />
+          <DensityProvider>
+            <AuthGate />
+          </DensityProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

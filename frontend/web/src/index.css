@@ -51,6 +51,20 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 222 47% 20%;
     --sidebar-ring: 222 47% 11%;
+
+    /* ── Density tokens — comfortable (default) ─────────────── */
+    --density-main-py: 1.5rem;    /* py-6  = 24px */
+    --density-main-px: 2rem;      /* px-8  = 32px */
+    --density-header-h: 4rem;     /* h-16  = 64px */
+    --density-nav-py: 0.625rem;   /* py-2.5 = 10px */
+  }
+
+  /* ── Compact density overrides ───────────────────────────── */
+  html[data-density="compact"] {
+    --density-main-py: 0.75rem;   /* 12px — was 24px */
+    --density-main-px: 1.5rem;    /* 24px — was 32px */
+    --density-header-h: 2.75rem;  /* 44px — was 64px */
+    --density-nav-py: 0.375rem;   /* 6px  — was 10px */
   }
 
   .dark {
@@ -148,7 +162,9 @@
 
   /* Nav */
   .nav-item {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer;
+    @apply flex items-center gap-3 px-3 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer;
+    padding-top: var(--density-nav-py, 0.625rem);
+    padding-bottom: var(--density-nav-py, 0.625rem);
     color: hsl(var(--sidebar-foreground));
   }
   .nav-item:hover {
@@ -223,4 +239,64 @@
     body { background: white !important; color: black !important; }
     .section-card { border: 1px solid #ddd !important; box-shadow: none !important; }
   }
+}
+
+/* ── Density-aware layout elements ───────────────────────────────────
+   These live outside @layer so they win over Tailwind utilities.
+   Transitions give a smooth feel when switching density in Settings.
+───────────────────────────────────────────────────────────────────── */
+#dashboard-main {
+  padding: var(--density-main-py) var(--density-main-px);
+  transition: padding 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+header.sticky {
+  height: var(--density-header-h, 4rem);
+  transition: height 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Table rows */
+html[data-density="compact"] .table-row-hover td {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+html[data-density="compact"] thead tr th {
+  padding-bottom: 0.5rem;
+}
+
+/* Section-card with inline padding classes */
+html[data-density="compact"] .section-card.p-4,
+html[data-density="compact"] .section-card.p-5 {
+  padding: 0.75rem;
+}
+html[data-density="compact"] .section-card.p-6 {
+  padding: 1rem;
+}
+
+/* Flex gap inside compact stat cards */
+html[data-density="compact"] .section-card.p-4.flex {
+  gap: 0.75rem;
+}
+
+/* Grid gaps */
+html[data-density="compact"] .grid.gap-4 {
+  gap: 0.625rem;
+}
+html[data-density="compact"] .grid.gap-6 {
+  gap: 0.875rem;
+}
+
+/* Heading margin-bottom before grids/tables */
+html[data-density="compact"] .mb-6 {
+  margin-bottom: 0.875rem;
+}
+
+/* space-y-6 vertical rhythm */
+html[data-density="compact"] .space-y-6 > * + * {
+  margin-top: 1rem;
+}
+
+/* Inner icon wrapper on stat cards */
+html[data-density="compact"] .section-card .p-2\.5 {
+  padding: 0.5rem;
 }

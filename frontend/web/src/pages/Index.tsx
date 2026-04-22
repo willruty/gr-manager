@@ -50,7 +50,7 @@ const KpiCard = ({
       transition={{ duration: 0.2 }}
       className={`relative rounded-2xl p-5 overflow-hidden cursor-pointer transition-all ${
         highlight
-          ? "bg-gradient-to-br from-primary via-primary to-[hsl(222,47%,18%)] text-primary-foreground shadow-lg shadow-primary/20"
+          ? "bg-gradient-to-br from-slate-900 via-slate-800 to-[hsl(222,47%,18%)] text-white shadow-lg shadow-black/20"
           : "bg-card border border-border/50 hover:border-primary/20 hover:shadow-md"
       }`}
     >
@@ -122,7 +122,20 @@ const Index = () => {
   return (
     <div className="space-y-8">
       {/* ── Hero / Page header ───────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-[hsl(222,47%,13%)] to-[hsl(222,47%,20%)] p-8 text-primary-foreground shadow-xl shadow-primary/10">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-[hsl(222,47%,13%)] to-[hsl(222,47%,20%)] p-8 text-white shadow-xl shadow-black/10">
+        {/* ── Background image — crane photo ──────────────────── */}
+        <img
+          src="/assets/sidebar-bg.png"
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover object-right scale-110 blur-[3px] opacity-30 select-none pointer-events-none"
+        />
+        {/* Gradient vignette: left side darker so text stays legible */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent pointer-events-none" />
+        {/* Bottom fade */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[hsl(222,47%,10%)]/60 to-transparent pointer-events-none" />
+
         {/* decorações */}
         <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-blue-400/10 blur-3xl" />
         <div className="absolute -bottom-16 left-1/3 w-64 h-64 rounded-full bg-blue-300/5 blur-3xl" />
@@ -143,7 +156,7 @@ const Index = () => {
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <button
                 onClick={() => navigate("/contracts")}
-                className="h-11 px-5 inline-flex items-center gap-2 rounded-xl bg-white text-primary font-bold text-[13px] shadow-lg shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="h-11 px-5 inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 font-bold text-[13px] shadow-lg shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <Plus size={15} /> Novo contrato
               </button>

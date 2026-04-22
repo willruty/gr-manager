@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FileText, FolderOpen, Users, Calendar,
   CheckSquare, UserCog, BarChart3, Settings, LogOut,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen, Truck
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
@@ -22,6 +22,7 @@ const navSections: NavSection[] = [
       { icon: FileText, label: "Contratos", path: "/contracts", badge: "41" },
       { icon: FolderOpen, label: "Documentos", path: "/documents", badge: "3" },
       { icon: Users, label: "Clientes", path: "/clients" },
+      { icon: Truck, label: "Equipamentos", path: "/equipments" },
     ],
   },
   {

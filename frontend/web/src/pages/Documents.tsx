@@ -11,6 +11,10 @@ import { mockDocuments, mockRecentFiles, MockDocument } from "@/lib/mockData";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import { DocumentUpload } from "@/components/ui/document-upload";
 
 type StatusFilter = "todos" | "valido" | "vencendo" | "vencido";
 
@@ -30,6 +34,7 @@ const Documents = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todos");
   const [typeFilter, setTypeFilter] = useState<DocTypeFilter>("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const filtered = useMemo(() => {
     return mockDocuments.filter((d) => {
@@ -97,7 +102,7 @@ const Documents = () => {
             <FolderPlus size={14} /> Nova Pasta
           </Button>
           <Button
-            onClick={() => toast.info("Selecione os arquivos para upload.")}
+            onClick={() => setUploadOpen(true)}
             className="gap-2 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow"
           >
             <Plus size={16} /> Upload
@@ -246,6 +251,26 @@ const Documents = () => {
           </div>
         </aside>
       </div>
+
+      {/* ── Upload Dialog ─────────────────────────────────── */}
+      <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>Upload de Documentos</DialogTitle>
+            <DialogDescription>
+              Selecione ou arraste os arquivos que deseja enviar para o repositório.
+            </DialogDescription>
+          </DialogHeader>
+          <DocumentUpload
+            onFilesAccepted={(files) => {
+              if (files.length > 0) {
+                toast.success(`${files.length} arquivo(s) carregado(s) com sucesso!`);
+                setUploadOpen(false);
+              }
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
